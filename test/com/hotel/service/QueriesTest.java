@@ -146,4 +146,19 @@ public class QueriesTest {
     h.checkOut(3);
     Check.isTrue(h.service.hasFreeRooms(), "room freed by check-out");
   }
+
+  public static void testHistoryStaysCarryDatesOldestFirst() {
+    var h = new TestHotel();
+    h.register("Aaa", "One");
+    h.clock.plusDays(1);
+    h.checkOut(1);
+    h.clock.plusDays(1);
+    h.register("Bbb", "Two");
+    var stays = h.service.history().getFirst().stays();
+    Check.equal(2, stays.size(), "two stays");
+    Check.isTrue(stays.get(0).checkIn().isBefore(stays.get(1).checkIn()), "oldest check-in first");
+    Check.isTrue(stays.get(0).checkOut() != null, "first has check-out");
+    Check.isTrue(stays.get(0).checkOut().isAfter(stays.get(0).checkIn()), "out after in");
+    Check.isTrue(stays.get(1).checkOut() == null, "active stay has no check-out");
+  }
 }

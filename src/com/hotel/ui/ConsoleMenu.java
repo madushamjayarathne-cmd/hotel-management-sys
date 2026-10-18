@@ -5,6 +5,8 @@ import com.hotel.service.checkout.CheckOutResult;
 import com.hotel.service.checkout.Receipt;
 import com.hotel.service.registration.RegistrationResult;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Predicate;
@@ -12,6 +14,9 @@ import java.util.stream.Collectors;
 
 public class ConsoleMenu {
   private static final String BACK = "0";
+
+  private static final DateTimeFormatter DATE_TIME =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
   private final HotelFacade hotel;
   private final Scanner in = new Scanner(System.in);
@@ -158,8 +163,16 @@ public class ConsoleMenu {
       if (h.guests().isEmpty()) {
         System.out.println("   no guests yet");
       }
-      for (int i = 0; i < h.guests().size(); i++) {
-        System.out.printf("   %d. %s%n", i + 1, h.guests().get(i));
+      for (int i = 0; i < h.stays().size(); i++) {
+        var stay = h.stays().get(i);
+        System.out.printf(
+            "   %d. %s | in: %s | out: %s%n",
+            i + 1,
+            stay.guest(),
+            DATE_TIME.format(stay.checkIn().atZone(ZoneId.systemDefault())),
+            stay.checkOut() == null
+                ? "still staying"
+                : DATE_TIME.format(stay.checkOut().atZone(ZoneId.systemDefault())));
       }
     }
   }

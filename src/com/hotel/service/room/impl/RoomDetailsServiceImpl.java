@@ -35,9 +35,11 @@ public class RoomDetailsServiceImpl implements RoomDetailsService {
     return rooms.findAll().stream()
         .map(
             r -> {
-              List<Stay> list = stays.findByRoom(r.number());
-              return new RoomHistory(
-                  r, list.stream().anyMatch(Stay::active), list.stream().map(Stay::guest).toList());
+              List<Stay> list =
+                  stays.findByRoom(r.number()).stream()
+                      .sorted(Comparator.comparing(Stay::checkIn).thenComparingLong(Stay::id))
+                      .toList();
+              return new RoomHistory(r, list.stream().anyMatch(Stay::active), list);
             })
         .toList();
   }

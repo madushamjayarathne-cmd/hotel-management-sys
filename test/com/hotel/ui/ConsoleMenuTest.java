@@ -128,8 +128,13 @@ public class ConsoleMenuTest {
   public static void testHistoryShowsStatusAndGuests() {
     String out = run("1", "Aaa", "One", "y", "2", "1", "y", "1", "Bbb", "Two", "y", "4", "0");
     Check.contains(out, "Room 1 (STANDARD) - occupied", "status");
-    Check.contains(out, "1. Aaa One", "first guest");
-    Check.contains(out, "2. Bbb Two", "second guest");
+    Check.contains(out, "1. Aaa One | in: ", "first guest with check-in");
+    String dt = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}";
+    Check.isTrue(
+        out.matches("(?s).*1\\. Aaa One \\| in: " + dt + " \\| out: " + dt + ".*"),
+        "checked-out guest shows both dates");
+    Check.contains(out, "2. Bbb Two | in: ", "second guest");
+    Check.contains(out, "out: still staying", "active guest has no check-out");
     Check.contains(out, "Room 2 (STANDARD) - free", "free room");
     Check.contains(out, "Room 4 (BUSINESS) - free", "business room");
   }
