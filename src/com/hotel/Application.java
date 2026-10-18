@@ -18,7 +18,7 @@ public class Application {
             HotelConfig.getTotalRooms(),
             HotelConfig.getStandardPrice(),
             HotelConfig.getBusinessMultiplier());
-    StayRepository stays = new FileBackedStayRepository(Path.of("hotel-data.ser"));
+    StayRepository stays = new FileBackedStayRepository(Path.of("hotel-data.log"));
 
     new ConsoleMenu(HotelFacade.create(rooms, stays)).run();
   }

@@ -60,7 +60,7 @@ public class StayRepositoryTest {
   }
 
   public static void testFileBackedPersistsBetweenRuns() throws IOException {
-    Path file = Files.createTempFile("hotel-test", ".ser");
+    Path file = Files.createTempFile("hotel-test", ".log");
     Files.delete(file);
     try {
       var first = new FileBackedStayRepository(file);
@@ -79,7 +79,7 @@ public class StayRepositoryTest {
   }
 
   public static void testFileBackedStartsEmptyWithoutFile() throws IOException {
-    Path file = Files.createTempFile("hotel-test", ".ser");
+    Path file = Files.createTempFile("hotel-test", ".log");
     Files.delete(file);
     try {
       Check.equal(0, new FileBackedStayRepository(file).findActive().size(), "empty");
@@ -89,11 +89,60 @@ public class StayRepositoryTest {
   }
 
   public static void testFileBackedCorruptFileFailsClearly() throws IOException {
-    Path file = Files.createTempFile("hotel-test", ".ser");
+    Path file = Files.createTempFile("hotel-test", ".log");
     try {
-      Files.writeString(file, "not a serialized list");
+      Files.writeString(file, "not a valid line\n");
       Check.throwsException(
           IllegalStateException.class, () -> new FileBackedStayRepository(file), "corrupt");
+    } finally {
+      Files.deleteIfExists(file);
+    }
+  }
+
+  public static void testSaveAppendsOnlyOneLine() throws IOException {
+    Path file = Files.createTempFile("hotel-test", ".log");
+    Files.delete(file);
+    try {
+      var repo = new FileBackedStayRepository(file);
+      Stay a = repo.save(newStay(1, "Ann"));
+      repo.save(newStay(2, "Bob"));
+      Check.equal(2, Files.readAllLines(file).size(), "one line per insert");
+      long size = Files.size(file);
+      repo.save(a.checkedOut(Instant.now()));
+      Check.equal(3, Files.readAllLines(file).size(), "update appends one line");
+      Check.isTrue(Files.readString(file).startsWith(
+          Files.readAllLines(file).get(0) + "\n"), "earlier lines untouched");
+      Check.isTrue(Files.size(file) > size, "file only grew");
+    } finally {
+      Files.deleteIfExists(file);
+    }
+  }
+
+  public static void testReplayCompactsSupersededLines() throws IOException {
+    Path file = Files.createTempFile("hotel-test", ".log");
+    Files.delete(file);
+    try {
+      var repo = new FileBackedStayRepository(file);
+      Stay a = repo.save(newStay(1, "Ann"));
+      repo.save(a.checkedOut(Instant.now()));
+      Check.equal(2, Files.readAllLines(file).size(), "history before restart");
+      var reloaded = new FileBackedStayRepository(file);
+      Check.equal(1, Files.readAllLines(file).size(), "compacted on start");
+      Check.isTrue(!reloaded.findByRoom(1).getFirst().active(), "latest version kept");
+    } finally {
+      Files.deleteIfExists(file);
+    }
+  }
+
+  public static void testPartialTrailingLineIsIgnored() throws IOException {
+    Path file = Files.createTempFile("hotel-test", ".log");
+    Files.delete(file);
+    try {
+      new FileBackedStayRepository(file).save(newStay(1, "Ann"));
+      Files.writeString(file, "2|2|Bo", java.nio.file.StandardOpenOption.APPEND);
+      var reloaded = new FileBackedStayRepository(file);
+      Check.equal(1, reloaded.findActive().size(), "partial line dropped");
+      Check.isTrue(Files.readString(file).endsWith("\n"), "file repaired");
     } finally {
       Files.deleteIfExists(file);
     }
