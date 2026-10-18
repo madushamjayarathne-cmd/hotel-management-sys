@@ -12,7 +12,6 @@ import java.nio.file.Path;
 
 public class Application {
   public static void main(String[] args) {
-    // To use a database, replace these two with JDBC/JPA implementations.
     RoomRepository rooms =
         new InMemoryRoomRepository(
             HotelConfig.getTotalRooms(),
@@ -20,6 +19,7 @@ public class Application {
             HotelConfig.getBusinessMultiplier());
     StayRepository stays = new FileBackedStayRepository(Path.of("hotel-data.log"));
 
-    new ConsoleMenu(HotelFacade.create(rooms, stays)).run();
+    HotelFacade hotel = HotelFactory.create(rooms, stays);
+    new ConsoleMenu(hotel).run();
   }
 }

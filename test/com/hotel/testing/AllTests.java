@@ -17,6 +17,9 @@ public class AllTests {
           com.hotel.service.RegistrationTest.class,
           com.hotel.service.CheckOutTest.class,
           com.hotel.service.QueriesTest.class,
+          com.hotel.service.RoomAllocationStrategyTest.class,
+          com.hotel.facade.HotelFacadeImplTest.class,
+          com.hotel.ui.FakeHotelApiTest.class,
           com.hotel.ui.ConsoleMenuTest.class);
 
   public static void main(String[] args) throws Exception {

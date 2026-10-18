@@ -52,6 +52,10 @@ public class ConsoleMenu {
 
   private void register() {
     System.out.println(" == Check in ==");
+    if (!hotel.hasFreeRooms()) {
+      System.out.println("Warning: all rooms are occupied, no guest can be registered right now.");
+      return;
+    }
     System.out.println("(enter " + BACK + " at any prompt to go back to the main menu)");
     Optional<String> name = askName("Name: ");
     Optional<String> surname = name.flatMap(n -> askName("Surname: "));
@@ -99,8 +103,8 @@ public class ConsoleMenu {
         }
         yield true;
       }
-      case CheckOutResult.UnknownRoom u -> retry("Check-out failed: no such room.");
-      case CheckOutResult.RoomAlreadyFree f -> retry("Check-out failed: the room is free.");
+      case CheckOutResult.UnknownRoom ignored -> retry("Check-out failed: no such room.");
+      case CheckOutResult.RoomAlreadyFree ignored -> retry("Check-out failed: the room is free.");
     };
   }
 
@@ -119,7 +123,7 @@ public class ConsoleMenu {
           System.out.printf(
               "Registration failed: %s is already registered in room %d.%n",
               stay.guest(), stay.roomNumber());
-      case RegistrationResult.NoFreeRooms n ->
+      case RegistrationResult.NoFreeRooms ignored ->
           System.out.println("Registration failed: no empty rooms.");
       case RegistrationResult.InvalidGuest(var reason) ->
           System.out.println("Registration failed: " + reason + ".");

@@ -1,7 +1,5 @@
 package com.hotel.service;
 
-import com.hotel.facade.HotelFacade;
-import com.hotel.service.checkout.*;
 import com.hotel.service.registration.*;
 import com.hotel.testing.Check;
 

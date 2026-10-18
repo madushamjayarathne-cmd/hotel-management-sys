@@ -1,8 +1,6 @@
 package com.hotel.service;
 
-import com.hotel.facade.HotelFacade;
-import com.hotel.service.checkout.*;
-import com.hotel.service.registration.*;
+import com.hotel.HotelFactory;
 import com.hotel.testing.Check;
 
 import java.math.BigDecimal;
@@ -93,7 +91,7 @@ public class QueriesTest {
     var stays = new com.hotel.repository.memory.InMemoryStayRepository(java.util.List.of());
     var clock = new com.hotel.testing.MutableClock(java.time.LocalDateTime.of(2026, 3, 10, 12, 0));
     var oldService =
-        HotelFacade.create(
+        HotelFactory.create(
             new com.hotel.repository.memory.InMemoryRoomRepository(
                 6, new BigDecimal("20.00"), new BigDecimal("1.5")),
             stays,
@@ -101,7 +99,7 @@ public class QueriesTest {
     oldService.register("Aaa", "One");
     clock.plusDays(2);
     oldService.checkOut(1);
-    var newService = HotelFacade.create(rooms, stays, clock);
+    var newService = HotelFactory.create(rooms, stays, clock);
     newService.register("Bbb", "Two");
     clock.plusDays(1);
     newService.checkOut(1); // 1 day x 50
@@ -135,5 +133,17 @@ public class QueriesTest {
   public static void testEmptyReportProfitIsZero() {
     var h = new TestHotel();
     Check.equal(new BigDecimal("0.00"), h.service.report().getFirst().profit(), "zero profit");
+  }
+
+  public static void testHasFreeRooms() {
+    var h = new TestHotel();
+    Check.isTrue(h.service.hasFreeRooms(), "empty hotel has free rooms");
+    String[] names = {"Aaa", "Bbb", "Ccc", "Ddd", "Eee", "Fff"};
+    for (String n : names) {
+      h.register(n, "Test");
+    }
+    Check.isTrue(!h.service.hasFreeRooms(), "full hotel");
+    h.checkOut(3);
+    Check.isTrue(h.service.hasFreeRooms(), "room freed by check-out");
   }
 }

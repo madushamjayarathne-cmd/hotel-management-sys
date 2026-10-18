@@ -1,8 +1,7 @@
 package com.hotel.service;
 
-import com.hotel.facade.HotelFacade;
+import com.hotel.HotelFactory;
 import com.hotel.service.checkout.*;
-import com.hotel.service.registration.*;
 import com.hotel.testing.Check;
 
 import java.math.BigDecimal;
@@ -64,13 +63,13 @@ public class CheckOutTest {
             6, new BigDecimal("20.00"), new BigDecimal("1.5"));
     var stays = new com.hotel.repository.memory.InMemoryStayRepository(java.util.List.of());
     var clock = new com.hotel.testing.MutableClock(LocalDateTime.of(2026, 3, 10, 12, 0));
-    HotelFacade.create(rooms, stays, clock).register("John", "Smith");
+    HotelFactory.create(rooms, stays, clock).register("John", "Smith");
 
     // same stays, but rooms now configured with a new price
     var repriced =
         new com.hotel.repository.memory.InMemoryRoomRepository(
             6, new BigDecimal("50.00"), new BigDecimal("1.5"));
-    var service = HotelFacade.create(repriced, stays, clock);
+    var service = HotelFactory.create(repriced, stays, clock);
     clock.plusDays(2);
     var receipt = ((CheckOutResult.CheckedOut) service.checkOut(1)).receipt();
     Check.equal(new BigDecimal("40.00"), receipt.total(), "old rate 20.00 x 2");

@@ -110,8 +110,9 @@ public class StayRepositoryTest {
       long size = Files.size(file);
       repo.save(a.checkedOut(Instant.now()));
       Check.equal(3, Files.readAllLines(file).size(), "update appends one line");
-      Check.isTrue(Files.readString(file).startsWith(
-          Files.readAllLines(file).get(0) + "\n"), "earlier lines untouched");
+      Check.isTrue(
+          Files.readString(file).startsWith(Files.readAllLines(file).getFirst() + "\n"),
+          "earlier lines untouched");
       Check.isTrue(Files.size(file) > size, "file only grew");
     } finally {
       Files.deleteIfExists(file);

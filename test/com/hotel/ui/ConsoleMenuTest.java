@@ -1,5 +1,6 @@
 package com.hotel.ui;
 
+import com.hotel.HotelFactory;
 import com.hotel.repository.memory.InMemoryRoomRepository;
 import com.hotel.repository.memory.InMemoryStayRepository;
 import com.hotel.testing.Check;
@@ -21,7 +22,7 @@ public class ConsoleMenuTest {
       System.setIn(new ByteArrayInputStream((String.join("\n", lines) + "\n").getBytes()));
       System.setOut(new PrintStream(buffer, true));
       var facade =
-          com.hotel.facade.HotelFacade.create(
+          HotelFactory.create(
               new InMemoryRoomRepository(6, new BigDecimal("20.00"), new BigDecimal("1.5")),
               new InMemoryStayRepository(List.of()));
       new ConsoleMenu(facade).run();
@@ -59,9 +60,10 @@ public class ConsoleMenuTest {
     String out =
         run(
             "1", "Aaa", "Test", "y", "1", "Bbb", "Test", "y", "1", "Ccc", "Test", "y", "1", "Ddd",
-            "Test", "y", "1", "Eee", "Test", "y", "1", "Fff", "Test", "y", "1", "Ggg", "Test", "y",
-            "0");
-    Check.contains(out, "Registration failed: no empty rooms", "full hotel message");
+            "Test", "y", "1", "Eee", "Test", "y", "1", "Fff", "Test", "y", "1", "Ggg", "0");
+    Check.contains(out, "all rooms are occupied", "warning shown");
+    Check.isTrue(!out.contains("Registration failed"), "no registration attempted");
+    Check.equal(6, out.split("Surname:", -1).length - 1, "only six guests were asked for a name");
   }
 
   public static void testCheckOutWhenNothingOccupied() {

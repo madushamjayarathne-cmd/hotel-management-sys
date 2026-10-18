@@ -1,5 +1,6 @@
 package com.hotel.service;
 
+import com.hotel.HotelFactory;
 import com.hotel.facade.HotelFacade;
 import com.hotel.service.checkout.CheckOutResult;
 import com.hotel.service.registration.RegistrationResult;
@@ -25,7 +26,7 @@ class TestHotel {
   }
 
   TestHotel(InMemoryRoomRepository rooms) {
-    service = HotelFacade.create(rooms, new InMemoryStayRepository(List.of()), clock);
+    service = HotelFactory.create(rooms, new InMemoryStayRepository(List.of()), clock);
   }
 
   RegistrationResult.Registered register(String name, String surname) {
